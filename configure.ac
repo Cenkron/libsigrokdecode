@@ -88,9 +88,19 @@ SRD_PKGLIBS_TESTS=
 # Keep track of all checked modules so we can list them at the end.
 SR_PKG_CHECK_SUMMARY([srd_pkglibs_summary])
 
-# Python 3 is always needed.
-SR_PKG_CHECK([python3], [SRD_PKGLIBS],
-	[python3 >= 3.2], [python-3.6 >= 3.6], [python-3.5 >= 3.5], [python-3.4 >= 3.4], [python-3.3 >= 3.3], [python-3.2 >= 3.2])
+# Python 3 is always needed,
+# but for MSYS2 we want to build using the version of Python installed in Windows.
+# Check if we are building for MSYS2
+AC_ARG_ENABLE([msys2],
+	[AS_HELP_STRING([--enable-msys2], [Enable MSYS2 support @<:@no@:>@])],
+	[:],
+	[enable_msys2=no])
+
+# Package check Python according to the build option mode
+AS_IF([test "x$enable_msys2" = xyes],
+	[SR_PKG_CHECK([python36], [SRD_PKGLIBS], [python36 >= 3.6])],
+	[SR_PKG_CHECK([python3], [SRD_PKGLIBS],
+		[python3 >= 3.2], [python-3.6 >= 3.6], [python-3.5 >= 3.5], [python-3.4 >= 3.4], [python-3.3 >= 3.3], [python-3.2 >= 3.2])])
 AS_IF([test "x$sr_have_python3" = xno],
 	[AC_MSG_ERROR([Cannot find Python 3 development headers.])])
 
@@ -158,7 +168,10 @@ libsigrokdecode configuration summary:
  - Building on..................... $build
  - Building for.................... $host
  - Building shared / static........ $enable_shared / $enable_static
-
+ - Building for MSYS2.............. $enable_msys2
+ - CFLAGS.......................... $pkg_cv_LIBSIGROKDECODE_CFLAGS
+ - LIBS.............................$pkg_cv_LIBSIGROKDECODE_LIBS
+ 
 Compile configuration:
  - C compiler...................... $CC
  - C compiler version.............. $srd_cc_version
